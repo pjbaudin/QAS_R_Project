@@ -1,0 +1,15 @@
+---
+title: "Readme"
+author: "Pierre Baudin"
+date: "December 24, 2016"
+output: html_document
+---
+
+# QAS Project
+
+## Overview
+
+To include scripts such as:
+* IQC monitoring with SAP and IQC findings
+* Product quality control monitoring
+* Statistical process control for in-line testing
