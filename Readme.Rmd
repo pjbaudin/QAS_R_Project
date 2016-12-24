@@ -5,11 +5,17 @@ date: "December 24, 2016"
 output: html_document
 ---
 
-# QAS Project
+# QAS Project Overview
 
-## Overview
+## Outlook
 
 To include scripts such as:
 * IQC monitoring with SAP and IQC findings
 * Product quality control monitoring
 * Statistical process control for in-line testing
+
+## IQC Monitoring
+
+## Product Quality Control Monitoring
+
+## SPC for in-lin testing
