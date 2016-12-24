@@ -14,8 +14,15 @@ To include scripts such as:
 * Product quality control monitoring
 * Statistical process control for in-line testing
 
-## IQC Monitoring
+1. IQC Monitoring
 
-## Product Quality Control Monitoring
+      * Objective:
+      To merge data from SAP and incoming quality control               results for supplier monitoring.
 
-## SPC for in-lin testing
+2. Product Quality Control Monitoring
+
+      * Objective:
+
+3. SPC for in-lin testing
+
+      * Objective
