@@ -16,6 +16,10 @@ To include scripts such as:
 
 ## IQC Monitoring
 
+### Objective
+To merge data from SAP and incoming quality control results for supplier monitoring.
+
+
 ## Product Quality Control Monitoring
 
 ## SPC for in-lin testing
