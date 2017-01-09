@@ -8,7 +8,7 @@ library(tictoc)     # To measure computation time
 library(readxl)     # to import and read excel files
 library(plotly)     # interactive plot
 library(qcc)        # quality analysis and plot
-library(ggplot)     # Plot package
+library(ggplot2)     # Plot package
 
 #############################################################################################
 
@@ -18,18 +18,21 @@ library(ggplot)     # Plot package
 #############################################################################################
 tic()
 
-# Set working directory
-setwd("C:/Users/PB/SkyDrive/DG Evolt/QASsvn/IQC Monitoring");
-getwd()
+# Set working directory (for future use)
+# setwd("C:/Users/PB/SkyDrive/DG Evolt/QASsvn/IQC Monitoring");
+# getwd()
 
-filename <- "IQC_defect_table.xlsx"
+# Test directory
+setwd("D:/Data Science/QAS_R_Project/IQC Monitoring")
+
+filename <- "IQC_defect_table_update.xlsx"
 
 # Get sheet number form the file
 
 SPC_sheet_nbr <- excel_sheets(filename)
 
 #Import sheet 1
-IQC_df <- read_excel("IQC_defect_table.xlsx", col_types = c("date", "text", "text", "text", "text", "text",
+IQC_df <- read_excel(filename, col_types = c("date", "text", "text", "text", "text", "text",
                                           "text", "text", "text", "text", "numeric", "text",
                                           "text","text", "text", "text", "numeric", "numeric",
                                           "text"))
@@ -48,6 +51,7 @@ IQC_df$Date <- ymd(IQC_df$Date)
 #Rename column
 IQC_df <- rename(IQC_df, DocNum = `SAP PO / MO no.`);
 IQC_df <- rename(IQC_df, ItemCode = `Part number`);
+IQC_df <- rename(IQC_df, IssueCat = `Issue cat.`);
 
 # check dataframe and summary
 #glimpse(IQC_df)
@@ -69,14 +73,45 @@ IQC_Dec <- IQC_df %>%
       filter(Date >= "2016-12-01" & Date <= "2016-12-31")
 
 ## Define weight for lot results
+## In the future use a define .csv table to set the result weight
+
 Weight <- data.frame(Result = c("Accepted", "Deviation", "Rejected"), Weight = c(2, 4, 8))
-      
+
+# Combine dataset with Result weight
 IQC_Dec <- left_join(IQC_Dec, Weight, by = "Result")
 
-IQC_Dec %>% mutate(Ratio = Severity * Weight) %>%
-      group_by(Result, Supplier) %>%
-      tally() %>%
-      arrange(desc(Ratio))
-head(IQC_Dec)
 
-ggplot(IQC_Dec, aes(Result, Severity)) + geom_point() + facet_grid(.~ Supplier)
+## Define weight for category
+## In the future use a define .csv table to set the category weight
+CatWeight <- data.frame( IssueCat = c("Appearance", "Construction",
+                                      "Dimension", "Engineering",
+                                      "Function", "Marking", "Material", "Packaging",
+                                      "PPAP"),
+                         CatWeight = c(2, 5, 3, 1, 5, 3, 3, 2, 1))
+# Combine dataset with category weigth
+IQC_Dec <- left_join(IQC_Dec, CatWeight, by = "IssueCat")
+
+
+TallyDec16 <- IQC_Dec %>% 
+      mutate(Ratio = Severity * Weight * CatWeight) %>%
+      group_by(Result, Supplier, Ratio) %>%
+      tally() %>%
+      ungroup()
+
+Top15Dec_Occurence <- TallyDec16 %>%
+      arrange(desc(n), Ratio) %>%
+      head(n = 15)
+
+Top15Dec_Occurence
+
+Top15Dec_Ratio <- TallyDec16 %>%
+      arrange(desc(Ratio), n) %>%
+      head(n = 15)
+
+Top15Dec_Ratio
+
+# compute teh intersection of the 2 calculated top 15
+intersect(Top15Dec_Occurence$Supplier, Top15Dec_Ratio$Supplier)
+
+# Thik about the output as the list of suppliers
+# that need to be watched and monitored for the following month
