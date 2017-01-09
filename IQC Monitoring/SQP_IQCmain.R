@@ -10,6 +10,7 @@ library(plotly)     # interactive plot
 library(qcc)        # quality analysis and plot
 library(ggplot2)     # Plot package
 
+
 #############################################################################################
 
 
@@ -52,6 +53,7 @@ IQC_df$Date <- ymd(IQC_df$Date)
 IQC_df <- rename(IQC_df, DocNum = `SAP PO / MO no.`);
 IQC_df <- rename(IQC_df, ItemCode = `Part number`);
 IQC_df <- rename(IQC_df, IssueCat = `Issue cat.`);
+
 
 # check dataframe and summary
 #glimpse(IQC_df)
@@ -115,3 +117,4 @@ intersect(Top15Dec_Occurence$Supplier, Top15Dec_Ratio$Supplier)
 
 # Thik about the output as the list of suppliers
 # that need to be watched and monitored for the following month
+
