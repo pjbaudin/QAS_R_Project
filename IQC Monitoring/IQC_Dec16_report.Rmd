@@ -1,0 +1,159 @@
+---
+title: "Dec-16 IQC Report"
+author: "Pierre Baudin"
+date: "January 12, 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Incoming Quality Report - December 2016
+
+### December Dataset
+
+Data are provided from the daily recording of incoming batch issues.
+
+```{r IQCdataimport, message=FALSE, warning=FALSE, include=FALSE}
+library(purrr)
+library(dplyr)
+library(lubridate)
+library(readxl)
+
+# Test directory
+setwd("D:/Data Science/QAS_R_Project/IQC Monitoring")
+
+filename <- "IQC_defect_table_update.xlsx"
+
+#Import sheet 1
+IQC_df <- read_excel(filename, col_types = c("date", "text", "text", "text", "text", "text",
+                                          "text", "text", "text", "text", "numeric", "text",
+                                          "text","text", "text", "text", "numeric", "numeric",
+                                          "text"))
+#check dimension of IQC_df
+dim_IQC_df <- dim(IQC_df) ;
+#remove last row from excel table (calculation row from excel)
+IQC_df <- as.data.frame(IQC_df[-(dim_IQC_df[1] - 1), ])
+
+# Clean data as factor
+c_names <- names(IQC_df)
+colfact <- c_names[c(2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 19)]
+IQC_df[ , colfact] <- map(IQC_df[ , colfact], factor)
+#Convert Date into Year - Month - Day
+IQC_df$Date <- ymd(IQC_df$Date)
+
+#Rename column
+IQC_df <- rename(IQC_df, DocNum = `SAP PO / MO no.`);
+IQC_df <- rename(IQC_df, ItemCode = `Part number`);
+IQC_df <- rename(IQC_df, IssueCat = `Issue cat.`);
+IQC_df <- rename(IQC_df, CardCode = Supplier);
+
+## Import Supplier list
+filename <- "Supplierlistcc.xlsx"
+
+Supplier <- read_excel(filename, col_types = c("text", "text"))
+Supplier$CardCode <- as.factor(Supplier$CardCode)
+
+## Join IQC_df and Supplier list
+IQC_df <- left_join(IQC_df, Supplier, by = "CardCode")
+
+## December results
+IQC_Dec <- IQC_df %>%
+      filter(Date >= "2016-12-01" & Date <= "2016-12-31")
+
+```
+
+
+The following table summarizes the number of lots accepted, accepted with deviation and rejected.
+
+Note: Lot accepted are listed in the monitoring table as the QC team found an issue such as missing PPAP or PI for example.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+table(IQC_Dec$Result)
+```
+
+
+### Calculation details
+
+#### Result Weight
+
+To help with the calculation, the outcome of an inspection has been given a weight as follow:
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+Weight <- data.frame(Result = c("Accepted", "Deviation", "Rejected"), Weight = c(2, 4, 8))
+Weight
+```
+
+#### Category and Weight
+
+A list of the issue category is available below. Each category has been assigned a weight to support calculation in the next section.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+CatWeight <- data.frame( IssueCat = c("Appearance", "Construction",
+                                      "Dimension", "Engineering",
+                                      "Function", "Marking", "Material", "Packaging",
+                                      "PPAP", "PI"),
+                         CatWeight = c(2, 5, 3, 1, 5, 3, 3, 2, 1, 1))
+CatWeight
+```
+
+### Computation of the Top 15 supplier by number of Occurence 
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+# Combine dataset with Result weight
+IQC_Dec <- left_join(IQC_Dec, Weight, by = "Result")
+
+# Combine dataset with category weigth
+IQC_Dec <- left_join(IQC_Dec, CatWeight, by = "IssueCat")
+
+TallyDec16 <- IQC_Dec %>% 
+      mutate(Ratio = Severity * Weight * CatWeight) %>%
+      group_by(CardCode, Result, Ratio) %>%
+      tally() %>%
+      ungroup()
+
+Top15Dec_Occurence <- TallyDec16 %>%
+      arrange(desc(n), desc(Ratio)) %>%
+      head(n = 15)
+
+Top15Dec_Ratio <- TallyDec16 %>%
+      arrange(desc(Ratio), desc(n)) %>%
+      head(n = 15)
+
+```
+
+Count of issue occurence in December 2016 results in the following table. Only the Top 15 suppliers are listed.
+
+```{r, echo=FALSE}
+Top15Dec_Occurence
+```
+
+
+### Computation of the Top 15 supplier usign quality ratio
+
+The quality ratio is calculated as follow:
+
+**Ratio = Result Weight x Severity x Category Weight**
+
+*Note:*  
+*In the future, this ratio can be adjusted using the price, quantity and other factors related to the material.*
+
+The following table output the Top 15 suppliers that had the highest quality defect ratio:
+
+```{r, echo=FALSE}
+Top15Dec_Ratio
+```
+
+## Final list of suppliers
+
+The final list of suppliers combine the suppliers with the highest occurence and highest quality ratio.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# compute teh intersection of the 2 calculated top 15
+TopSup <- intersect(Top15Dec_Occurence$CardCode, Top15Dec_Ratio$CardCode)
+TopSup <- as.data.frame(TopSup)
+left_join(TopSup, Supplier, by = c("TopSup" = "CardCode"))
+```
