@@ -115,3 +115,13 @@ intersect(Top15Dec_Occurence$Supplier, Top15Dec_Ratio$Supplier)
 
 # Thik about the output as the list of suppliers
 # that need to be watched and monitored for the following month
+
+
+## Supplier list
+
+filename <- "Supplierlistcc.xlsx"
+
+#Import sheet 1
+Supplier <- read_excel(filename, col_types = c("text", "text", "text"))
+Supplier$CardCode <- as.factor(Supplier$CardCode)
+summary(Supplier)
