@@ -23,3 +23,10 @@ AOI_df <- suppressWarnings(read_excel(fileName, sheet = 4))
 ######################
 # Data Cleaning
 
+# Rename variables
+names(AOI_df) <- c("Date", "MONumber", "SAPMONumber", "PartNumber",
+                   "PartName", "Quantity", "ReportRef", "A-sidePPM",
+                   "B-sidePPM", "Average", "Notes")
+# Convert to factor
+ind <- c("MONumber", "SAPMONumber", "PartNumber", "PartName", "ReportRef")
+AOI_df[ind] <- lapply(AOI_df[ind], factor)
