@@ -10,6 +10,7 @@ library(dplyr)
 library(ggplot2)
 library(zoo)
 library(reshape2)
+library(lubridate)
 
 # Import data
 FileName <- "QC_Bonus_monitoring_R.xlsx"
@@ -23,17 +24,20 @@ QCMonitor[ind] <- lapply(QCMonitor[ind], factor)
 QCMonitor$Month <- QCMonitor$Date %>%
       format("%b-%Y") %>%
       as.yearmon("%b-%Y")
+# Clean up date format
+QCMonitor$Date <- ymd(QCMonitor$Date)
 
 # Filter the QC Operator working for the last 2 months
 ind <- QCMonitor %>%
-      filter(Date > Sys.Date() - 76) %>%
+      filter(Date > (Sys.Date() - 76)) %>%
       select(QCOperatorName) %>%
       unique() %>%
       t() %>%
       c() %>%
       as.factor()
 
-QCMonitor_2m <- filter(QCMonitor, QCOperatorName %in% ind)
+QCMonitor_2m <- QCMonitor %>% 
+      filter(QCOperatorName %in% ind)
 
 # Summary
 summary(QCMonitor)
