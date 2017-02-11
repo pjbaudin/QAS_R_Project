@@ -3,8 +3,10 @@ title: "AOI Monthly report"
 author: "Pierre Baudin"
 date: "February 10, 2017"
 output:
-  html_document: default
+  word_document: 
+    toc: yes
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -21,7 +23,7 @@ library(lubridate)
 library(ggplot2)
 
 # Date for the report
-MAOI <- paste(month(Sys.Date() - 1, label = TRUE), "-", year(Sys.Date()), sep = "")
+MAOI <- paste(month((month(Sys.Date()) - 1), label = TRUE), "-", year(Sys.Date()), sep = "")
 ```
 
 
@@ -75,7 +77,9 @@ AOI_KPI <- AOI_df %>%
 RESULT <- paste(AOI_KPI, " PPM", sep = "")
 ```
 
-For the month of `r MAOI`, the AOI defect rate is `r RESULT`.
+For the month of `r MAOI`, the AOI defect rate is **`r RESULT`**.
+
+---------------------
 
 Below is a summary of the data collected during `r MAOI`:
 
@@ -86,6 +90,8 @@ AOI_df %>%
       select(MONumber, PartNumber, PartName, Quantity, Average) %>%
       summary()
 ```
+
+---------------
 
 The following plot display the trend for each part number that have been processed in the SMT room and inspected using the AOI machine.
 
@@ -103,6 +109,9 @@ AOI_plot <- AOI_df %>%
       filter(PartNumber %in% ind) %>%
       select(Date, PartNumber, AsidePPM, BsidePPM)
 
+fileplot <- paste(MAOI, ".png", sep = "")
+
+png(fileplot, width = 1200, height = 830)
 ggplot(AOI_plot, aes(x = Date)) +
       geom_point(aes(y = AsidePPM), colour = "blue") +
       geom_line(aes(y = AsidePPM), colour = "lightblue") +
@@ -110,7 +119,10 @@ ggplot(AOI_plot, aes(x = Date)) +
       geom_line(aes(y = BsidePPM), colour = "lightgreen") +
       geom_hline(yintercept = 500, colour = "red") +
       facet_wrap(~ PartNumber)
+dev.off()
 ```
+
+---------------------
 
 ## Annex
 
