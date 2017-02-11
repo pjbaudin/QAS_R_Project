@@ -118,7 +118,9 @@ ggplot(AOI_plot, aes(x = Date)) +
       geom_point(aes(y = BsidePPM), colour = "green") +
       geom_line(aes(y = BsidePPM), colour = "lightgreen") +
       geom_hline(yintercept = 500, colour = "red") +
-      facet_wrap(~ PartNumber)
+      facet_wrap(~ PartNumber) +
+      ggtitle(paste(MAOI, "AOI performance", sep = " ")) +
+      ylab("Defective rate in PPM")
 dev.off()
 ```
 
