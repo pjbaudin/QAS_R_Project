@@ -27,14 +27,15 @@ QCMonitor$Month <- QCMonitor$Date %>%
 # Clean up date format
 QCMonitor$Date <- ymd(QCMonitor$Date)
 
-# Filter the QC Operator working for the last 2 months
+# month of report
+MonthQC <- paste(month((month(Sys.Date())-1), label = TRUE), year(Sys.Date()), sep = "-")
+# Filter the QC Operator working for the last months
 ind <- QCMonitor %>%
-      filter(Date > (Sys.Date() - 76)) %>%
+      filter(month(Date) == month(Sys.Date()) - 1 &
+                   year(Date) == year(Sys.Date())) %>%
       select(QCOperatorName) %>%
       unique() %>%
-      t() %>%
-      c() %>%
-      as.factor()
+      t() %>% c() %>% as.factor()
 
 QCMonitor_2m <- QCMonitor %>% 
       filter(QCOperatorName %in% ind)
@@ -71,4 +72,16 @@ ggplot(QCMonitor_2m_r,aes(x = Month, y = value)) +
       geom_bar(aes(fill = variable), stat = "identity") +
       facet_wrap(~ QCOperatorName) +
       ylab("Expenses (RMB)") +
-      ggtitle("Individual QC Operator Expense Monitoring")
+      ggtitle(paste("Individual QC Operator Expense Monitoring", MonthQC, sep = " - "))
+
+
+############################################
+# For future implementation
+############################################
+
+# Add staff salary to get global QAS expense
+# 
+# Add Absence and vacation data
+# Add Start date
+# 
+# Monitor hours of OT and weekend OT
