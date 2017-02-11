@@ -1,0 +1,24 @@
+"","PartNumber","PartName","Quantity"
+"1","630012","SMD Reflow Side A (AT9012 3000K LED Board)",16020
+"2","701151","SMD Reflow Side B (DCDALMRM2 V1P0)",315
+"3","608199","SMD Reflow Side A (EV-LEDFIRE-LITE)",5001
+"4","604455","SMD Reflow Side B (LED Fire III Dish LED)",2100
+"5","602688","SMD Reflow Side A (LED Fire III Dish LED)",2100
+"6","609314","SMD Reflow Side B (Gen3 Semi Pro)",100
+"7","609316","SMD Reflow Side A (Gen3 Semi Pro)",100
+"8","604128","GEN III SMD Glue Side B",3000
+"9","603943","GEN III SMD Populated Side A",3000
+"10","700983","SMD Reflow Side A (DCDALCIP250-2 Bottom Board)",620
+"11","701019","SMD Reflow Side A (DCDALCIP250-2 Top Board)",620
+"12","604402","SMD Glue Side A (USB Primary PCB)",1430
+"13","604407","SMD Glue Side A (USB Secondary PCB)",2814
+"14","606597","SMD Reflow Side A (EV-PEARL-PRO-IP65-EM-WP LED Board)",310
+"15","608932","SMD Reflow Side A (AT9012TRI 3000K/6000K LED Board)",1420
+"16","607669","SMD Reflow Side A (Ledfire Boost Full Feature (53-81-114-142)mA )",4500
+"17","607668","SMD Reflow Side B (Ledfire Boost Full Feature (53-81-114-142)mA )",4500
+"18","607558","SMD Reflow Side B (EV-LEDFIRE3-BAS)",15060
+"19","607560","SMD Reflow Side A (EV-LEDFIRE3-BAS)",15060
+"20","608591","SMD Reflow Side B (Ledfire III Dish LED PCB)",4000
+"21","608593","SMD Reflow Side A (Ledfire III Dish LED PCB)",4000
+"22","604128","SMD Glue Side B (GEN III)",2025
+"23","603943","SMD Reflow Side A (GEN III)",2025
