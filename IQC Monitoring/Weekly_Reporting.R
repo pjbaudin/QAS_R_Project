@@ -159,7 +159,7 @@ IQC_PPAP <- IQC_week %>%
 
 ######
 # export result and PPAP list in csv
-mainDir <- getwd()
+mainDir <- "C:/Users/PB/SkyDrive/DG Evolt/QAS_Data"
 subDir <- WIQC
 
 dir.create(file.path(mainDir, subDir), showWarnings = FALSE)
@@ -170,6 +170,68 @@ write.csv(IQC_PPAP, File_Name)
 
 File_Name <- paste("IQC_", WIQC, "Monitoring_Result.csv", sep = "")
 write.csv(IQCweekResult, File_Name)
+
+
+# Weekly report for the system week
+
+IQC_week <- IQC_df %>%
+        filter(week(InspDate) == week(Sys.Date()) &
+                       year(InspDate) == year(Sys.Date()))
+
+SAP_weekKPI <- SAPres %>%
+        filter(week(DocDate) == week(Sys.Date()) &
+                       year(DocDate) == year(Sys.Date())) %>%
+        droplevels() %>%
+        group_by(DocNum)
+
+IQC_weekKPI <- IQC_week %>%
+        filter(week(DocDate) == week(Sys.Date()) &
+                       year(DocDate) == year(Sys.Date())) %>%
+        filter(Result == "Rejected" | Result == "Deviation")
+
+###############
+# Weekly summary
+
+weekKPI <- sum(IQC_weekKPI$Result == "Rejected") / length(unique(SAP_weekKPI$DocNum))
+outA <- paste("Week", "ThisWeek", "IQC Percentage of lot rejected:",
+              round((weekKPI) * 100, digits = 2),"%", sep=" ");
+outB <- paste("Number of part received: ", length(SAP_weekKPI$ItemCode), sep = "");
+outC <- paste("Number of lot received: ", length(unique(SAP_weekKPI$DocNum)), sep = "");
+outD <- paste("Average number of part per lot received: ",
+              round(length(SAP_weekKPI$ItemCode) / length(unique(SAP_weekKPI$DocNum)), digits = 2),
+              sep = "");
+outE <- paste("Number of rejected lots: ", sum(IQC_week$Result == "Rejected"), sep = "");
+outF <- paste("Number of lots accepted with deviation: ", sum(IQC_week$Result == "Deviation"), sep = "");
+
+
+# On-time receiving
+# Need to pull the ITR transfer date from SAP
+IQCon_time <- mean(IQC_df$InspDate - IQC_df$DocDate, na.rm = TRUE)
+outG <- paste("Mean inspection time: ", round(IQCon_time, digits = 2), " days", sep = "")
+
+IQCweekResult <- data.frame(Result = c(outA, outB, outC, outD, outE, outF, outG))
+
+##########
+# PPAP monitoring for review and action
+
+IQC_PPAP <- IQC_week %>% 
+        filter(IssueCategory == "PPAP") %>%
+        select(ItemCode, ItemName)
+
+######
+# export result and PPAP list in csv
+mainDir <- "C:/Users/PB/SkyDrive/DG Evolt/QAS_Data"
+subDir <- "ThisWeek"
+
+dir.create(file.path(mainDir, subDir), showWarnings = FALSE)
+
+setwd(file.path(mainDir, subDir))
+File_Name <- paste("IQC_", "ThisWeek", "PPAP_follow_up.csv", sep = "")
+write.csv(IQC_PPAP, File_Name)
+
+File_Name <- paste("IQC_", "ThisWeek", "Monitoring_Result.csv", sep = "")
+write.csv(IQCweekResult, File_Name)
+
 
 #######################################
 # For future implementation
