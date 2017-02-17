@@ -38,6 +38,7 @@ Tempdfplot <- melt(Tempdf, id = "Time")
 ggplot(Tempdfplot, aes(x = Time, y = value, colour = variable)) +
       geom_line(lwd = 1.5) +
       geom_hline(yintercept = 85, colour = "red", lwd = 1.5) +
+      scale_y_continuous(breaks = seq(0, 100, 5)) +
       xlab("Time") +
       ylab("Temperature in degree C") +
       ggtitle(paste("MO ", MONumber, " - 30USBCM Charger Temperature Test - ", Sys.Date(), sep = ""))
