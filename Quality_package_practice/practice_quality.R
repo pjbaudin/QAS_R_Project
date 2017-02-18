@@ -78,3 +78,6 @@ CRP <- c(0.02, 0.05)
 find.plan(PRP, CRP, type="binomial")
 find.plan(PRP, CRP, type="hypergeom", N)
 find.plan(PRP, CRP, type="normal", s.type="unknown")
+
+library(SixSigma)
+packageVersion("SixSigma")
