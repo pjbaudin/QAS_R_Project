@@ -8,6 +8,7 @@ library(lubridate)
 library(ggplot2)
 library(RODBC)      # to query SAP database
 library(DBI)        # DBI convention for MySQL
+library(reshape2)
 
 ###########################
 # Data import
@@ -104,18 +105,31 @@ SAPres[ind] <- lapply(SAPres[ind], ymd)
 ########################
 # Merge IQC table and SAP database
 
-IQC_df <- suppressWarnings(left_join(IQC_df, SAPres, by = c("DocNum", "ItemCode")))
+IQC_df <- suppressWarnings(full_join(IQC_df, SAPres, by = c("DocNum", "ItemCode")))
 
 # Convert to factor
 ind <- c("ItemCode", "DocNum")
 IQC_df[ind] <- lapply(IQC_df[ind], as.factor)
 
+# Align dates with doc dates if NA
+ind <- is.na(IQC_df$InspDate)
+IQC_df[ind, "InspDate"] <- IQC_df[ind, "DocDate"]
+
+# Mutate to get week inspection number
+IQC_df <- IQC_df %>%
+        mutate(WeekNumber = as.Date(cut(InspDate, breaks = "week"))) %>%
+        mutate(MonthInsp = as.Date(cut(InspDate, breaks = "month")))
+
+# If Na replace line by lot Accepted
+ind <- is.na(IQC_df$Result)
+IQC_df[ind, "Result"] <- "Accepted"
+
 ################
 # Weekly report for the system week - 1
 
 IQC_week <- IQC_df %>%
-      filter(week(InspDate) == week(Sys.Date() - 1) &
-                   year(InspDate) == year(Sys.Date()))
+      filter(week(WeekNumber) == week(Sys.Date()) - 1 &
+                   year(WeekNumber) == year(Sys.Date()))
 
 SAP_weekKPI <- SAPres %>%
       filter(week(DocDate) == week(Sys.Date()) - 1 &
@@ -124,8 +138,8 @@ SAP_weekKPI <- SAPres %>%
       group_by(DocNum)
 
 IQC_weekKPI <- IQC_week %>%
-      filter(week(DocDate) == week(Sys.Date()) - 1 &
-                   year(DocDate) == year(Sys.Date())) %>%
+      filter(week(WeekNumber) == week(Sys.Date()) - 1 &
+                     year(WeekNumber) == year(Sys.Date())) %>%
       filter(Result == "Rejected" | Result == "Deviation")
 
 ###############
@@ -134,7 +148,8 @@ IQC_weekKPI <- IQC_week %>%
 weekKPI <- sum(IQC_weekKPI$Result == "Rejected") / length(unique(SAP_weekKPI$DocNum))
 outA <- paste("Week", WIQC, "IQC Percentage of lot rejected:",
            round((weekKPI) * 100, digits = 2),"%", sep=" ");
-outB <- paste("Number of part received: ", length(SAP_weekKPI$ItemCode), sep = "");
+outB <- paste("Number of part received in SAP: ", length(SAP_weekKPI$ItemCode), sep = "");
+outB2 <- paste("Number of part received and inspected: ", length(IQC_week$ItemCode), sep = "");
 outC <- paste("Number of lot received: ", length(unique(SAP_weekKPI$DocNum)), sep = "");
 outD <- paste("Average number of part per lot received: ",
       round(length(SAP_weekKPI$ItemCode) / length(unique(SAP_weekKPI$DocNum)), digits = 2),
@@ -148,7 +163,7 @@ outF <- paste("Number of lots accepted with deviation: ", sum(IQC_week$Result ==
 IQCon_time <- mean(IQC_df$InspDate - IQC_df$DocDate, na.rm = TRUE)
 outG <- paste("Mean inspection time: ", round(IQCon_time, digits = 2), " days", sep = "")
 
-IQCweekResult <- data.frame(Result = c(outA, outB, outC, outD, outE, outF, outG))
+IQCweekResult <- data.frame(Result = c(outA, outB, outB2, outC, outD, outE, outF, outG))
 
 ##########
 # PPAP monitoring for review and action
@@ -175,8 +190,8 @@ write.csv(IQCweekResult, File_Name)
 # Weekly report for the system week
 
 IQC_week <- IQC_df %>%
-        filter(week(InspDate) == week(Sys.Date()) &
-                       year(InspDate) == year(Sys.Date()))
+        filter(WeekNumber == week(Sys.Date()) &
+                       year(WeekNumber) == year(Sys.Date()))
 
 SAP_weekKPI <- SAPres %>%
         filter(week(DocDate) == week(Sys.Date()) &
@@ -185,8 +200,8 @@ SAP_weekKPI <- SAPres %>%
         group_by(DocNum)
 
 IQC_weekKPI <- IQC_week %>%
-        filter(week(DocDate) == week(Sys.Date()) &
-                       year(DocDate) == year(Sys.Date())) %>%
+        filter(WeekNumber == week(Sys.Date()) &
+                       year(WeekNumber) == year(Sys.Date())) %>%
         filter(Result == "Rejected" | Result == "Deviation")
 
 ###############
@@ -195,7 +210,8 @@ IQC_weekKPI <- IQC_week %>%
 weekKPI <- sum(IQC_weekKPI$Result == "Rejected") / length(unique(SAP_weekKPI$DocNum))
 outA <- paste("Week", "ThisWeek", "IQC Percentage of lot rejected:",
               round((weekKPI) * 100, digits = 2),"%", sep=" ");
-outB <- paste("Number of part received: ", length(SAP_weekKPI$ItemCode), sep = "");
+outB <- paste("Number of part received in SAP: ", length(SAP_weekKPI$ItemCode), sep = "");
+outB2 <- paste("Number of part received and inspected: ", length(IQC_week$ItemCode), sep = "");
 outC <- paste("Number of lot received: ", length(unique(SAP_weekKPI$DocNum)), sep = "");
 outD <- paste("Average number of part per lot received: ",
               round(length(SAP_weekKPI$ItemCode) / length(unique(SAP_weekKPI$DocNum)), digits = 2),
@@ -209,7 +225,9 @@ outF <- paste("Number of lots accepted with deviation: ", sum(IQC_week$Result ==
 IQCon_time <- mean(IQC_df$InspDate - IQC_df$DocDate, na.rm = TRUE)
 outG <- paste("Mean inspection time: ", round(IQCon_time, digits = 2), " days", sep = "")
 
-IQCweekResult <- data.frame(Result = c(outA, outB, outC, outD, outE, outF, outG))
+IQCweekResult <- data.frame(Result = c(outA, outB, outB2, outC, outD, outE, outF, outG))
+
+### Add in future Rmd report with template
 
 ##########
 # PPAP monitoring for review and action
@@ -231,6 +249,61 @@ write.csv(IQC_PPAP, File_Name)
 
 File_Name <- paste("IQC_", "ThisWeek", "Monitoring_Result.csv", sep = "")
 write.csv(IQCweekResult, File_Name)
+
+
+#########################################
+# Weekly performance monitoting (rolling over 4 weeks)
+
+IQC_rolling4w <- IQC_df %>%
+        filter(WeekNumber >= Sys.Date() - as.difftime(10, units = "weeks") &
+                       weeks(WeekNumber) < weeks(Sys.Date()))
+        
+        # filter(WeekNumber > week(Sys.Date()) - 5 &
+        #                WeekNumber < week(Sys.Date()) &
+        #                year(InspDate) == year(Sys.Date()))
+        
+
+# IQC_rolling4w_unique <- aggregate(ItemCode ~ WeekNumber, data = IQC_rolling4w,
+#                            FUN = function(x) length(unique(x)))
+
+# Calculate how many parts received per week
+IQC_rolling4w_total <- aggregate(ItemCode ~ WeekNumber, data = IQC_rolling4w,
+                                 FUN = length)
+
+mean(IQC_rolling4w_total$ItemCode)
+
+testdf <- IQC_rolling4w %>%
+        select(WeekNumber, ItemCode, Result) %>%
+        group_by(WeekNumber) %>%
+        summarize(total_Accepted = sum(Result == "Accepted"),
+                  total_Deviation = sum(Result == "Deviation"),
+                  total_Rejected = sum(Result == "Rejected")) %>%
+        melt(id = "WeekNumber")
+
+# The palette with grey:
+cbPalette <- c("#009E73", "#E69F00", "#D55E00")
+
+######
+# export plot
+mainDir <- "C:/Users/PB/SkyDrive/DG Evolt/QAS_Data"
+subDir <- WIQC
+
+dir.create(file.path(mainDir, subDir), showWarnings = FALSE)
+
+setwd(file.path(mainDir, subDir))
+File_Name <- paste("IQC_", WIQC, "10week_rolling.png", sep = "")
+
+png(File_Name, width = 1102, height = 720, units = "px")
+ggplot(testdf, aes(WeekNumber, value )) +
+        geom_bar(aes(fill = variable), stat = "identity", position = "stack",
+                 alpha = 0.6, colour = "darkgrey") +
+        scale_fill_manual(values = cbPalette) +
+        geom_smooth(aes(colour = variable), method = "auto", se = FALSE) +
+        scale_colour_manual(values = cbPalette) +
+        scale_x_date(date_breaks = "1 week", date_labels = "%W") +
+        ggtitle("IQC - Quality Performance Monitoring") +
+        ylab("Number of parts inspected")
+dev.off()
 
 
 #######################################
