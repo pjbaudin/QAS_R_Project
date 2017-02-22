@@ -11,6 +11,7 @@ library(ggplot2)
 library(zoo)
 library(reshape2)
 library(lubridate)
+library(plotly)
 
 # Import data
 FileName <- "QAS_Expense_monitoring.xlsx"
@@ -72,6 +73,8 @@ QCMonitor_Dept <- QASMonitor %>%
 # Plotting the QC operator Dept. Expense
 ggplot(QCMonitor_Dept,aes(x = Month, y = value )) + 
       geom_bar(aes(fill = variable), stat = "identity") +
+        facet_wrap(~ variable) +
+        geom_smooth(se = FALSE) +
       ylab("Expenses (RMB)") +
       ggtitle("QAS Dept. - QC Operator Expense Monitoring")
 
@@ -122,6 +125,20 @@ ggplot(QAS_Sum, aes(x = Month, y = GrandTotal)) +
 ############################################
 # For future implementation
 ############################################
+
+
+p <- ggplotly(p)
+
+# Linear model trial
+QAS_Sum_gran <-  QASMonitor %>%
+        group_by(Month) %>%
+        select(Month, BaseSalary, OT, WKD, QCBonus) %>%
+        summarise_each(funs(sum))
+
+QAS_model_all <- lm(QCBonus ~ ., data = QAS_Sum_gran[, -1])
+QAS_model_all_step <- step(QAS_model_all, k=log(nrow(QAS_Sum_gran[, -1])))
+
+summary(QAS_model_all_step)
 
 # Add staff salary to get global QAS expense
 # 
