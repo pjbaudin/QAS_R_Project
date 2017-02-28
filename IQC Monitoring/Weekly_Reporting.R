@@ -59,7 +59,7 @@ IQC_df[ind] <- suppressWarnings(lapply(IQC_df[ind], as.numeric))
 IQC_df$InspDate <- ymd(IQC_df$InspDate)
 
 # Final observation selection from IQC Monitoring table
-IQC_df <- IQC_df %>% select(InspDate, Area,ItemCode, DocNum, PI, NCN, NCNType,
+IQC_df <- select(IQC_df, InspDate, Area, ItemCode, DocNum, PI, NCN, NCNType,
                             Severity, IssueCategory, IssueNote, Result, Redmine,
                             RedmineStatus, SamplingSize, RJ_NGCount, OQCReport,
                             MaterialLabel, Who)
