@@ -1,0 +1,31 @@
+"","PartNumber","PartName","Quantity"
+"1","630013","SMD Reflow Side A (AT9012 4000K LED Board)",4080
+"2","630012","SMD Reflow Side A (AT9012 3000K LED Board)",5000
+"3","607911","SMD Reflow Side A (Mercury Basic LED PCB)",10000
+"4","604402","SMD Glue Side A (USB Primary PCB)",7200
+"5","604407","SMD Glue Side A (USB Secondary PCB)",7182
+"6","608591","SMD Reflow Side B (Ledfire III Dish LED PCB)",4000
+"7","608593","SMD Reflow Side A (Ledfire III Dish LED PCB)",4000
+"8","607905","SMD Reflow Side A (Mercury Basic PCB)",10076
+"9","630278","LEDFire Boost burn-in Load (SMT Side A)",500
+"10","604128","SMD Glue Side B (GEN III)",3000
+"11","603943","SMD Reflow Side A (GEN III)",3000
+"12","604908","Mercury III LED PCB SMT Side B",448
+"13","604910","Mercury III LED PCB SMT Side A",448
+"14","604579","SMD Reflow Side B (Mercury III LED PCB)",448
+"15","602723","SMD Reflow Side A (Mercury III LED PCB)",448
+"16","609073","SMD Reflow Side A (Mercury Jumbo 40m)",1500
+"17","609081","SMD Reflow Side B (EV-MERCURY-III-JUMBO 40M Secondary LED)",700
+"18","609083","SMD Reflow Side A (EV-MERCURY-III-JUMBO 40M Secondary LED)",700
+"19","630013","SMD Reflow Side A (AT9012 4000K LED Board)",12000
+"20","604339","SMD Reflow Side A (Emergency Timer Bottom Board)",500
+"21","604340","SMD Reflow Side B (Emergency Timer Bottom Board)",500
+"22","604336","SMD Reflow Side B (Emergency Timer Top Board)",500
+"23","604335","SMD Reflow Side A (Emergency Timer Top Board)",500
+"24","607558","SMD Reflow Side B (EV-LEDFIRE3-BAS)",8040
+"25","607560","SMD Reflow Side A (EV-LEDFIRE3-BAS)",8040
+"26","605554","SMD Reflow Side A (LEDFire III Batten)",4100
+"27","605591","Ledfire III Batten SMT Side A {VARIANT}",2400
+"28","604164","SMD Reflow Side A (DCDAL31M2 Switch Board 4.5mA)",600
+"29","601602","SMD Reflow Side A (DCDAL31M2 Microcontroller Board)",588
+"30","600313","SMD Reflow Side A (DCDAL31MOD PIR Board)",600

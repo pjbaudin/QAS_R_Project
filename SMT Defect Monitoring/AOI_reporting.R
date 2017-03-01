@@ -65,9 +65,9 @@ AOI_plot <- AOI_df %>%
       filter(PartNumber %in% ind) %>%
       select(Date, PartNumber, AsidePPM, BsidePPM)
 
-# fileplot <- paste(MAOI, ".png", sep = "")
-# 
-# png(fileplot, width = 1200, height = 830)
+fileplot <- paste(MAOI, ".png", sep = "")
+ 
+png(fileplot, width = 1200, height = 830)
 ggplot(AOI_plot, aes(x = Date)) +
         geom_point(aes(y = AsidePPM), colour = "blue") +
         geom_line(aes(y = AsidePPM), colour = "lightblue") +
@@ -77,7 +77,7 @@ ggplot(AOI_plot, aes(x = Date)) +
         facet_wrap(~ PartNumber) +
         ggtitle(paste(MAOI, "AOI performance", sep = " ")) +
         ylab("Defective rate in PPM")
-# dev.off()
+dev.off()
 
 # Export list of part for this month
 MonthPart <- AOI_df %>%
