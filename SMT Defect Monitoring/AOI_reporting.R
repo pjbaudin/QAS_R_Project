@@ -10,14 +10,16 @@ library(ggplot2)
 # File path name
 fileName <- "C:/Users/PB/SkyDrive/DG Evolt/QASsvn/QA Monitoring/QA report monitoring list.xlsx"
 
-# Set working directory
-setwd("D:/Data Science/QAS_R_Project/SMT Defect Monitoring")
-
 # Read the sheet names
 QAMonitoring_sheet <- excel_sheets(fileName)
 
 # Import AOI dataset
 AOI_df <- suppressWarnings(read_excel(fileName, sheet = 4))
+
+
+###################################################
+# Set working directory
+setwd("C:/Users/PB/SkyDrive/DG Evolt/QAS_Data")
 
 ######################
 # Data Cleaning
@@ -30,11 +32,12 @@ AOI_df <- AOI_df[-ind, ]
 names(AOI_df) <- c("Date", "MONumber", "SAPMONumber", "PartNumber",
                    "PartName", "Quantity", "ReportRef", "AsidePPM",
                    "BsidePPM", "Average", "Notes")
+
 # Convert to factor
 ind <- c("MONumber", "SAPMONumber", "PartNumber", "PartName", "ReportRef")
 AOI_df[ind] <- lapply(AOI_df[ind], factor)
 
-# Convert date in dmy
+# Convert date in ymd
 AOI_df$Date <- ymd(AOI_df$Date)
 
 # Date for the report
@@ -50,6 +53,16 @@ AOI_KPI <- AOI_df %>%
       t() %>% mean () %>% round(digits = 2)
 
 paste(month(Sys.Date()) - 1, "-", year(Sys.Date()), " KPI : ", AOI_KPI, " PPM", sep = "")
+
+mainDir <- getwd()
+subDir <- MAOI
+
+if (file.exists(subDir)){
+        setwd(file.path(mainDir, subDir))
+} else {
+        dir.create(file.path(mainDir, subDir))
+        setwd(file.path(mainDir, subDir))
+}
 
 
 ###############
@@ -67,22 +80,39 @@ AOI_plot <- AOI_df %>%
 
 fileplot <- paste(MAOI, ".png", sep = "")
  
-png(fileplot, width = 1200, height = 830)
-ggplot(AOI_plot, aes(x = Date)) +
+AOImonthly <- ggplot(AOI_plot, aes(x = Date)) +
         geom_point(aes(y = AsidePPM), colour = "blue") +
         geom_line(aes(y = AsidePPM), colour = "lightblue") +
         geom_point(aes(y = BsidePPM), colour = "green") +
         geom_line(aes(y = BsidePPM), colour = "lightgreen") +
-        geom_hline(yintercept = 500, colour = "red") +
+        geom_hline(yintercept = 250, colour = "red") +
         facet_wrap(~ PartNumber) +
         ggtitle(paste(MAOI, "AOI performance", sep = " ")) +
         ylab("Defective rate in PPM")
-dev.off()
+
+ggsave(fileplot, AOImonthly)
 
 # Export list of part for this month
 MonthPart <- AOI_df %>%
         filter(month(Date) == month(Sys.Date()) - 1 &
                        year(Date) == year(Sys.Date())) %>%
-        select(PartNumber, PartName, Quantity)
+        select(PartNumber, PartName, Quantity, AsidePPM, BsidePPM) %>%
+        group_by(PartNumber, PartName) %>%
+        summarize(TotalQuantity = sum(Quantity),
+                  AsidePPM_avg = mean(AsidePPM),
+                  BsidePPM_avg = mean(BsidePPM))
 
-write.csv(MonthPart, file = paste(MAOI, "Part_list.csv", sep = "_"))
+write.csv(MonthPart, file = paste(MAOI, "AOI_Resutlts_Part_list.csv", sep = "_"))
+
+# Export list for investigation
+MonthPart_Inv <- AOI_df %>%
+        filter(month(Date) == month(Sys.Date()) - 1 &
+                       year(Date) == year(Sys.Date())) %>%
+        select(MONumber, PartNumber, PartName, Quantity, AsidePPM, BsidePPM) %>%
+        group_by(MONumber, PartNumber, PartName) %>%
+        summarize(TotalQuantity = sum(Quantity),
+                  AsidePPM_avg = mean(AsidePPM),
+                  BsidePPM_avg = mean(BsidePPM)) %>%
+        filter(AsidePPM_avg > 250 | BsidePPM_avg > 250)
+
+write.csv(MonthPart_Inv, file = paste(MAOI, "AOI_Resutlts_toInvestigate.csv", sep = "_"))
