@@ -6,19 +6,6 @@ QCLevel_RMB <- data.frame(QCLevel = c("QC0", "QC1", "QC2", "QC3", "QC4", "QC5", 
 
 QCLevel_RMB$QCLevel <- as.factor(QCLevel_RMB$QCLevel)
 
-# Reference for long service bonus
-# 1 nian	100
-# 2 nian	150
-# 3 nian	200
-# 4 nian	250
-# 5 nian	300
-# 6 nian	320
-# 7 nian	340
-# 8 nian	360
-# 9 nian	380
-# 10 nian	400
-
-
 # Hourly rate
 Hrate <- 10.05
 Dayhour <- 8
@@ -101,17 +88,8 @@ QAS_QCOp$TotalAbs[ind] <- 0
 
 QAS_QCOp$Workdays <- MonthDay - QAS_QCOp$TotalAbs
 QAS_QCOp$BaseSalary <- QAS_QCOp$Workdays * Dayhour * Hrate
-QAS_QCOp$GrandTotal <- QAS_QCOp$OTvalue + QAS_QCOp$WKDvalue + QAS_QCOp$BaseSalary
-
 
 QAS_QCOp$EmployeeName <-  as.factor(QAS_QCOp$EmployeeName)
-
-write.csv(QAS_QCOp, file = "MonthlySummary.csv")
-
-ggplot(OTListMonthSum, aes(variable, OThours)) +
-        geom_col(aes(fill = OTRate))
-
-
 
 # Import data for QC level
 FileName <- "QCBonusLevel_Master.xlsx"
@@ -119,47 +97,90 @@ QCBonuslevel <- read_excel(FileName)
 
 QCBonuslevel$StartDate <- ymd(QCBonuslevel$StartDate)
 QCBonuslevel$DateQCBonus <- ymd(QCBonuslevel$DateQCBonus)
+QCBonuslevel$EvalDate <- as.Date(cut(QCBonuslevel$EvalDate, breaks = "month"))
 
 # Convert to factor
-ind <- c("EmployeeNumber", "Name", "ChineseName", "Class", "Position", "QCLevel")
+ind <- c("EmployeeNumber", "EmployeeName", "ChineseName", "Class", "Position", "QCLevel", "Status")
 QCBonuslevel[ind] <- lapply(QCBonuslevel[ind], factor)
 
 # Add the QC level bonus in RMB with left join to QCLevel_RMB
 QCBonuslevel <- left_join(QCBonuslevel, QCLevel_RMB, by = "QCLevel")
 QCBonuslevel$QCLevel <- as.factor(QCBonuslevel$QCLevel)
 
-QCBonuslevel <- QCBonuslevel %>%
-        mutate(ServiceTime = floor(as.numeric(Sys.Date() - StartDate) / 365.25)) %>%
-        mutate(HoldQCLevelTime = as.numeric(difftime(Sys.Date(), DateQCBonus)))
-
 QCBonuslevel <- QCBonuslevel[-nrow(QCBonuslevel), ]
 
-QCBonuslevel$ServiceBonus <- 0
+QCBonuslevel <- QCBonuslevel %>%
+        filter(Status == "Active")
 
-for(i in 1:nrow(QCBonuslevel)) {
-        if(QCBonuslevel$ServiceTime[i] == 0) {
-                QCBonuslevel$ServiceBonus[i] <- 0
-        } else if(QCBonuslevel$ServiceTime[i] == 1) {
-                QCBonuslevel$ServiceBonus[i] <- 100
-        } else if(QCBonuslevel$ServiceTime[i] == 2) {
-                QCBonuslevel$ServiceBonus[i] <- 150
-        } else if(QCBonuslevel$ServiceTime[i] == 3){
-                QCBonuslevel$ServiceBonus[i] <- 200
-        } else if(QCBonuslevel$ServiceTime[i] == 4){
-                QCBonuslevel$ServiceBonus[i] <- 300
-        } else if(QCBonuslevel$ServiceTime[i] == 5){
-                QCBonuslevel$ServiceBonus[i] <- 320
+QAS_QCOp <- left_join(QAS_QCOp, QCBonuslevel, by = c("EmployeeName", "Month" = "EvalDate"))
+QAS_QCOp$EmployeeName <- as.factor(QAS_QCOp$EmployeeName)
+
+QAS_QCOp$ServiceTime <- floor(as.numeric(QAS_QCOp$Month - QAS_QCOp$StartDate) / 365.25)
+ind <- QAS_QCOp$ServiceTime <= 0 | is.na(QAS_QCOp$ServiceTime)
+QAS_QCOp$ServiceTime[ind] <- 0
+
+QAS_QCOp$HoldQCLevelTime <- duration(
+        as.numeric(difftime(QAS_QCOp$Month, QAS_QCOp$DateQCBonus)),
+        "seconds")
+
+QAS_QCOp$ServiceBonus <- 0
+
+for(i in 1:nrow(QAS_QCOp)) {
+        if(QAS_QCOp$ServiceTime[i] <= 0) {
+                QAS_QCOp$ServiceBonus[i] <- 0
+        } else if(QAS_QCOp$ServiceTime[i] == 1) {
+                QAS_QCOp$ServiceBonus[i] <- 100
+        } else if(QAS_QCOp$ServiceTime[i] == 2) {
+                QAS_QCOp$ServiceBonus[i] <- 150
+        } else if(QAS_QCOp$ServiceTime[i] == 3){
+                QAS_QCOp$ServiceBonus[i] <- 200
+        } else if(QAS_QCOp$ServiceTime[i] == 4){
+                QAS_QCOp$ServiceBonus[i] <- 250
+        } else if(QAS_QCOp$ServiceTime[i] == 5){
+                QAS_QCOp$ServiceBonus[i] <- 300
+        } else if(QAS_QCOp$ServiceTime[i] == 6){
+                QAS_QCOp$ServiceBonus[i] <- 320
+        } else if(QAS_QCOp$ServiceTime[i] == 7){
+                QAS_QCOp$ServiceBonus[i] <- 340
+        } else if(QAS_QCOp$ServiceTime[i] == 8){
+                QAS_QCOp$ServiceBonus[i] <- 360
+        } else if(QAS_QCOp$ServiceTime[i] == 9){
+                QAS_QCOp$ServiceBonus[i] <- 380
+        } else if(QAS_QCOp$ServiceTime[i] == 10){
+                QAS_QCOp$ServiceBonus[i] <- 400
         }
 }
 
+# Reference for long service bonus
+# 1 nian	100
+# 2 nian	150
+# 3 nian	200
+# 4 nian	250
+# 5 nian	300
+# 6 nian	320
+# 7 nian	340
+# 8 nian	360
+# 9 nian	380
+# 10 nian	400
+
+QAS_QCOp$QCEvalAmount <- (QAS_QCOp$ServiceBonus + QAS_QCOp$Amount) * QAS_QCOp$QCEval
+
+QAS_QCOp$QCBonusAmount <- QAS_QCOp$ServiceBonus +
+        QAS_QCOp$Amount +
+        QAS_QCOp$QCEvalAmount
+
+QAS_QCOp$GrandTotal <- QAS_QCOp$OTvalue +
+        QAS_QCOp$WKDvalue +
+        QAS_QCOp$BaseSalary +
+        QAS_QCOp$QCEvalAmount
+        
+
+QAS_QCOp <- na.omit(QAS_QCOp)
+
+write.csv(QAS_QCOp, file = "MonthlySummary.csv")
 
 
 
 
-# Ploting OTList
-ggplot(OTList, aes(x = Date, y = value)) +
-        geom_col(aes(fill = variable))
 
-ggplot(OTList, aes(x = Date, y = value)) +
-        geom_col(aes(fill = variable)) +
-        facet_wrap(~ variable)
+

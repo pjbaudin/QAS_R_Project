@@ -29,44 +29,53 @@ if(length(InputFile) == 0) {
 Data_Processing <- function(MONumber) {
         MONumber <- as.character(MONumber)
         subdir <- str_subset(list.dirs(), MONumber)
-        FileName <- paste(subdir,
-                          str_subset(list.files(path = subdir), "PF9810"),
-                          sep = "/")
+        FileName <- tolower(list.files(path = subdir))
+        FileName <- paste(subdir, str_subset(FileName, ".csv"), sep = "/")
         
         df <- read.csv(FileName)
         
-        Bat1 <- paste(df$SerialNumber[1])
-        Bat2 <- paste(df$SerialNumber.1[1])
-        Bat3 <- paste(df$SerialNumber.2[1])
-        Bat4 <- paste(df$SerialNumber.3[1])
+        df$DateTime <- ymd_hms(strptime(df$DateTime, "%Y/%m/%d %H:%M"))
         
-        df <- df %>%
-                select(Voltage.V., Current.A., Power.W., PowerFactor,
-                     Battery1..., Battery2..., Battery3..., Battery4...) %>%
-                mutate(Time = as_datetime(rep(1:nrow(df))))
-
-        names(df) <- c("Voltage", "Current", "InputPower",
-                       "PowerFactor", Bat1, Bat2, Bat3, Bat4, "Time")
-
-        df <- melt(df, id=c("Time", "Voltage", "Current", "InputPower", "PowerFactor")) 
+        names(df) <- c("DateTime", "SerialNumber", "InputVoltage", "InputCurrent", "InputPower",
+                       "PowerFactor", "BatteryLevel")
         
-        ORTplot <- ggplot(df, aes(x = Time, y = value)) +
-                geom_point(aes(colour = variable), alpha = 0.6, size = 0.8) +
-                geom_line(aes(colour = variable)) +
-                facet_wrap(~ variable) +
+        ORTplot <- ggplot(df, aes(x = DateTime, y = BatteryLevel)) +
+                geom_point(aes(colour = SerialNumber), alpha = 0.6, size = 0.8) +
+                geom_line(aes(colour = SerialNumber)) +
+                facet_wrap(~ SerialNumber) +
                 ggtitle(paste("Charging level as function of time - ", MONumber, sep = ""))
         
         FileName <- paste(subdir, paste(MONumber, "-ORT_BatteryChargeLevel.png", sep = ""), sep = "/")
         ggsave(FileName, ORTplot)
         
         FileName <- paste(subdir, paste(MONumber, "-ORT_InputVoltage.png", sep = ""), sep = "/")
-        png(FileName)
-                plot(df$Voltage ~ df$Time)
-        dev.off()
+        ORTplot <- ggplot(df, aes(x= DateTime, y = InputVoltage)) +
+                geom_jitter(alpha = 0.6) +
+                geom_smooth(method = "loess")
+        ggsave(FileName, ORTplot)
+        
+        FileName <- paste(subdir, paste(MONumber, "-ORT_InputCurrent.png", sep = ""), sep = "/")
+        ORTplot <- ggplot(df, aes(x= DateTime, y = InputCurrent)) +
+                geom_jitter(alpha = 0.6) +
+                geom_smooth(method = "loess")
+        ggsave(FileName, ORTplot)
+        
+        FileName <- paste(subdir, paste(MONumber, "-ORT_InputPower.png", sep = ""), sep = "/")
+        ORTplot <- ggplot(df, aes(x= DateTime, y = InputPower)) +
+                geom_jitter(alpha = 0.6) +
+                geom_smooth(method = "loess")
+        ggsave(FileName, ORTplot)
+        
+        FileName <- paste(subdir, paste(MONumber, "-ORT_PowerFactor.png", sep = ""), sep = "/")
+        ORTplot <- ggplot(df, aes(x= DateTime, y = PowerFactor)) +
+                geom_jitter(alpha = 0.6) +
+                geom_smooth(method = "loess")
+        ggsave(FileName, ORTplot)
         
         FileName <- paste(subdir, paste(MONumber, "-ORT_InputPowerVSVoltage.png", sep = ""), sep = "/")
-        ORTplot <- ggplot(df, aes(x = Voltage, y = InputPower)) +
-                geom_point(alpha = 0.5)
+        ORTplot <- ggplot(df, aes(x = InputVoltage, y = InputPower)) +
+                geom_jitter(alpha = 0.5) +
+                geom_smooth(method = "loess")
         ggsave(FileName, ORTplot)
 }
 
