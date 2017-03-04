@@ -77,6 +77,7 @@ Data_Processing <- function(MONumber) {
                 geom_jitter(alpha = 0.5) +
                 geom_smooth(method = "loess")
         ggsave(FileName, ORTplot)
+        
 }
 
 map(MOtoProcess, Data_Processing)

@@ -2,7 +2,7 @@
 # Result are planned for use in RMarkdown report
 
 # set working directory
-setwd("C:/Users/PB/SkyDrive/DG Evolt/QAS_Data")
+setwd("C:/Users/PB/SkyDrive/DG Evolt/QAS_Data/QAS_Dept_Admin")
 
 # Load library
 library(readxl)
