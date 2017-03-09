@@ -11,14 +11,14 @@ library(dplyr)
 setwd("C:/Users/PB/SkyDrive/DG Evolt/QAS_Data/USB_Temperature test")
 
 # Import data set
-FileName <- "4000531 USB temperature test 170228.csv"
+FileName <- "4000637 USB temperature test 170305.csv"
 Tempdf <- read.csv(FileName)
 
 # Grep the MO number
 MONumber <- str_sub(FileName, start = 1L, end = 7L)
 
 # Rename variables
-names(Tempdf) <- c("Time", "TempInChamber", "TempInChamber2", "Probe1", "TemperatureInChamber3", "Probe2", "TempInCase")
+names(Tempdf) <- c("Time", "Probe1", "TempInCase", "Probe2", "TempInChamber")
 
 # Convert Time into proper class
 Tempdf$Time <- ymd_hm(Tempdf$Time)

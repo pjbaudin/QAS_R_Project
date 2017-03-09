@@ -34,7 +34,7 @@ Data_Processing <- function(MONumber) {
         
         df <- read.csv(FileName)
         
-        df$DateTime <- ymd_hms(strptime(df$DateTime, "%Y/%m/%d %H:%M"))
+        df$DateTime <- ymd_hms(strptime(df$DateTime, "%m/%d/%Y %H:%M"))
         
         names(df) <- c("DateTime", "SerialNumber", "InputVoltage", "InputCurrent", "InputPower",
                        "PowerFactor", "BatteryLevel")

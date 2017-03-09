@@ -263,6 +263,15 @@ QAS_QCOp <- filter(QAS_QCOp, Month >= "2016-09-01" )
 
 write.csv(QAS_QCOp, file = "MonthlySummary.csv")
 
+# Export for the month QC Bonus Operator
+Export_QCBonus <- QAS_QCOp[QAS_QCOp$Month == "2017-02-01" & QAS_QCOp$Class == "QC Operator",
+                           c("Month", "EmployeeName", "EmployeeNumber", "OT", "WKD",
+                             "OTvalue", "WKDvalue", "TotalAbs", "StartDate", "Position",
+                             "QCLevel", "Amount", "ServiceBonus", "QCEvalAmount", "QCBonusAmount")]
+
+write.csv(Export_QCBonus, file = "2017-02_MonthlyQCBonusSummary.csv")
+
+
 # The palette with grey:
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7")
 
