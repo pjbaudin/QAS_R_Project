@@ -41,23 +41,23 @@ AOI_df[ind] <- lapply(AOI_df[ind], factor)
 AOI_df$Date <- ymd(AOI_df$Date)
 
 # Date for the report
-MAOI <- paste(month((month(Sys.Date()) - 1), label = TRUE), "-", year(Sys.Date()), sep = "")
+MAOI <- paste(month((month(Sys.Date())), label = TRUE), "-", year(Sys.Date()), sep = "")
 
 ################
-# Monthly report for the system month - 1
+# Monthly report for the system month
 
 AOI_KPI <- AOI_df %>%
-      filter(month(Date) == month(Sys.Date()) - 1 &
+      filter(month(Date) == month(Sys.Date()) &
                    year(Date) == year(Sys.Date())) %>%
       select(Average) %>%
-      t() %>% mean () %>% round(digits = 2)
+      t() %>% mean() %>% round(digits = 2)
 
-paste(month(Sys.Date()) - 1, "-", year(Sys.Date()), " KPI : ", AOI_KPI, " PPM", sep = "")
+paste(month(Sys.Date()), "-", year(Sys.Date()), " KPI : ", AOI_KPI, " PPM", sep = "")
 
 mainDir <- getwd()
 subDir <- MAOI
 
-if (file.exists(subDir)){
+if (file.exists(subDir)) {
         setwd(file.path(mainDir, subDir))
 } else {
         dir.create(file.path(mainDir, subDir))
@@ -66,10 +66,10 @@ if (file.exists(subDir)){
 
 
 ###############
-# Plotting for the system month - 1
+# Plotting for the system month
 
 ind <- AOI_df %>%
-      filter(month(Date) == month(Sys.Date()) - 1 &
+      filter(month(Date) == month(Sys.Date()) &
                    year(Date) == year(Sys.Date())) %>%
       select(PartNumber) %>%
       unique() %>% t()
@@ -94,7 +94,7 @@ ggsave(fileplot, AOImonthly)
 
 # Export list of part for this month
 MonthPart <- AOI_df %>%
-        filter(month(Date) == month(Sys.Date()) - 1 &
+        filter(month(Date) == month(Sys.Date()) &
                        year(Date) == year(Sys.Date())) %>%
         select(PartNumber, PartName, Quantity, AsidePPM, BsidePPM) %>%
         group_by(PartNumber, PartName) %>%
@@ -106,7 +106,7 @@ write.csv(MonthPart, file = paste(MAOI, "AOI_Resutlts_Part_list.csv", sep = "_")
 
 # Export list for investigation
 MonthPart_Inv <- AOI_df %>%
-        filter(month(Date) == month(Sys.Date()) - 1 &
+        filter(month(Date) == month(Sys.Date()) &
                        year(Date) == year(Sys.Date())) %>%
         select(MONumber, PartNumber, PartName, Quantity, AsidePPM, BsidePPM) %>%
         group_by(MONumber, PartNumber, PartName) %>%
