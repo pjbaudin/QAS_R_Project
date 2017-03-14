@@ -23,7 +23,7 @@ MO_processed <- str_sub(MO_processed, start = -9L, end = -1L)
 write.csv(MO_processed, file = "MO_processed_list.csv")
 
 #create function to import excel sheets and plot each
-XL_analysis <- function (path_name) {
+XL_analysis <- function(path_name) {
       # Set working directory for data import
       setwd("C:/Users/PB/SkyDrive/DG Evolt/QAS_Data/USB_SPC")
       
@@ -58,7 +58,8 @@ XL_analysis <- function (path_name) {
       # Dimensions and analysis for specification of the AB dimensions
       USB_SPC_AB <- qcc.groups(USB_SPC$AB, USB_SPC$Time)
       GraphTitle <- paste("30USBCM - Xbar chart for AB - ", MOnumber)
-      obj_AB <- qcc(USB_SPC_AB, type="xbar", limits =c(21.60, 21.85), center = 21.80, title = GraphTitle)
+      obj_AB <- qcc(USB_SPC_AB, type = "xbar", limits = c(21.60, 21.85),
+                    center = 21.80, title = GraphTitle)
 
       # Create JPEG file name using sheet name
       FileName <- paste("AB_", MOnumber, ".jpeg")
@@ -78,7 +79,8 @@ XL_analysis <- function (path_name) {
       # Dimensions and analysis for specification of the CD dimensions
       USB_SPC_CD <- qcc.groups(USB_SPC$CD, USB_SPC$Time)
       GraphTitle <- paste("30USBCM - Xbar chart for CD ", MOnumber)
-      obj_CD <- qcc(USB_SPC_CD, type="xbar", limits = c(21.35, 21.60), center = 21.40, title = GraphTitle)
+      obj_CD <- qcc(USB_SPC_CD, type = "xbar", limits = c(21.35, 21.60),
+                    center = 21.40, title = GraphTitle)
   
       # Create JPEG file name using sheet name
       FileName <- paste("CD_", MOnumber, ".jpeg")
